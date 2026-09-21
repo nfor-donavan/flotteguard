@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import client from '../api/client';
 import Modal from '../components/Modal';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Staff() {
+  const { t } = useLanguage();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -42,60 +44,62 @@ export default function Staff() {
     <>
       <div className="page-header">
         <div>
-          <h1>Staff</h1>
-          <p>Managers, drivers, and renter accounts on your team</p>
+          <h1>{t('staff_title')}</h1>
+          <p>{t('staff_subtitle')}</p>
         </div>
         <button className="btn btn-gold" onClick={() => setShowModal(true)}>
-          Add person
+          {t('add_person')}
         </button>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
         {loading ? (
-          <p style={{ padding: 20 }}>Loading…</p>
+          <p style={{ padding: 20 }}>{t('loading')}</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Phone</th>
-                <th>Role</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u._id}>
-                  <td>{u.name}</td>
-                  <td>{u.phone}</td>
-                  <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>{t('col_name')}</th>
+                  <th>{t('col_phone')}</th>
+                  <th>{t('col_role')}</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u._id}>
+                    <td>{u.name}</td>
+                    <td>{u.phone}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {showModal && (
-        <Modal title="Add person" onClose={() => setShowModal(false)}>
+        <Modal title={t('add_person')} onClose={() => setShowModal(false)}>
           <form onSubmit={handleSubmit}>
             <div className="form-field">
-              <label>Full name</label>
+              <label>{t('full_name')}</label>
               <input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} required />
             </div>
             <div className="form-field">
-              <label>Phone number</label>
+              <label>{t('phone_number')}</label>
               <input value={form.phone} onChange={(e) => setForm((f) => ({ ...f, phone: e.target.value }))} required />
             </div>
             <div className="form-field">
-              <label>Role</label>
+              <label>{t('role')}</label>
               <select value={form.role} onChange={(e) => setForm((f) => ({ ...f, role: e.target.value }))}>
-                <option value="manager">Manager</option>
-                <option value="driver">Driver</option>
-                <option value="renter">Renter</option>
+                <option value="manager">{t('role_manager')}</option>
+                <option value="driver">{t('role_driver')}</option>
+                <option value="renter">{t('role_renter')}</option>
               </select>
             </div>
             <div className="form-field">
-              <label>Temporary password</label>
+              <label>{t('temporary_password')}</label>
               <input
                 type="password"
                 value={form.password}
@@ -105,7 +109,7 @@ export default function Staff() {
             </div>
             {error && <p className="error-text">{error}</p>}
             <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
-              {submitting ? 'Adding…' : 'Add person'}
+              {submitting ? t('adding') : t('add_person')}
             </button>
           </form>
         </Modal>

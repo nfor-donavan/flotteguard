@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 function toIsoDate(date) {
   // Local calendar date, not UTC - avoids the classic bug where picking
@@ -16,7 +16,9 @@ function toIsoDate(date) {
  * value: Date | null. onChange receives a Date.
  */
 export default function DateField({ label, value, onChange, minimumDate }) {
+  const { colors } = useTheme();
   const [showPicker, setShowPicker] = useState(false);
+  const styles = createStyles(colors);
 
   function handleChange(event, selected) {
     setShowPicker(Platform.OS === 'ios'); // iOS picker stays open inline; Android closes itself
@@ -44,8 +46,10 @@ export default function DateField({ label, value, onChange, minimumDate }) {
 
 export { toIsoDate };
 
-const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600', color: colors.inkMuted, marginBottom: 6 },
-  button: { backgroundColor: colors.white, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E4E7EF' },
-  buttonText: { fontSize: 15, color: colors.ink }
-});
+function createStyles(colors) {
+  return StyleSheet.create({
+    label: { fontSize: 13, fontWeight: '600', color: colors.inkMuted, marginBottom: 6 },
+    button: { backgroundColor: colors.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: colors.border },
+    buttonText: { fontSize: 15, color: colors.ink }
+  });
+}

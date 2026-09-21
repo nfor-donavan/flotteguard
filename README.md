@@ -100,3 +100,23 @@ your deployed backend URL.
 
 Wired in as the favicon for the admin dashboard (`admin-dashboard/public/`)
 and as the app icon/splash for the Expo mobile app (`mobile-app/assets/`).
+
+## UI upgrades (theme, language, responsiveness)
+
+- **Admin dashboard**: redesigned split-panel login with a brand hero
+  panel and copyright footer, light/dark mode (toggle in the sidebar and
+  on the login page, persisted in `localStorage`), full English/French
+  translation (toggle next to the theme switch), and a responsive layout
+  - below ~860px wide the sidebar becomes a slide-in drawer behind a
+  hamburger button, and tables scroll horizontally instead of overflowing.
+- **Mobile app**: light/dark mode and English/French translation (toggle
+  pills on the login screen and in each screen's top bar), a redesigned
+  login screen with a gradient brand hero over a rounded form sheet, and a
+  copyright footer.
+- **Fixed**: the status bar clock/battery icons were invisible on the
+  Driver and Renter screens. The app was hard-coding white ("light")
+  status bar icons everywhere, which are unreadable against those
+  screens' light backgrounds. Every screen now renders its own status bar
+  style via `ScreenContainer`, matched to that screen's actual background,
+  and all screens are wrapped in a proper `SafeAreaView` so content can't
+  render underneath the system bars in the first place.

@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
-import { colors } from '../theme';
+import { useTheme } from '../context/ThemeContext';
 
 /**
  * options: [{ label, value }]
  */
 export default function SelectField({ label, value, options, onSelect, placeholder = 'Select…' }) {
+  const { colors } = useTheme();
   const [open, setOpen] = useState(false);
   const selected = options.find((o) => o.value === value);
+  const styles = createStyles(colors);
 
   return (
     <View style={{ marginTop: 12 }}>
@@ -43,14 +45,16 @@ export default function SelectField({ label, value, options, onSelect, placehold
   );
 }
 
-const styles = StyleSheet.create({
-  label: { fontSize: 13, fontWeight: '600', color: colors.inkMuted, marginBottom: 6 },
-  button: { backgroundColor: colors.white, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: '#E4E7EF' },
-  buttonText: { fontSize: 15, color: colors.ink },
-  overlay: { flex: 1, backgroundColor: 'rgba(11,31,58,0.45)', justifyContent: 'flex-end' },
-  sheet: { backgroundColor: colors.white, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 20, maxHeight: '60%' },
-  sheetTitle: { fontSize: 16, fontWeight: '700', color: colors.ink, marginBottom: 10 },
-  option: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#E4E7EF' },
-  optionText: { fontSize: 15, color: colors.ink },
-  empty: { color: colors.inkMuted, textAlign: 'center', paddingVertical: 20 }
-});
+function createStyles(colors) {
+  return StyleSheet.create({
+    label: { fontSize: 13, fontWeight: '600', color: colors.inkMuted, marginBottom: 6 },
+    button: { backgroundColor: colors.card, borderRadius: 10, padding: 12, borderWidth: 1, borderColor: colors.border },
+    buttonText: { fontSize: 15, color: colors.ink },
+    overlay: { flex: 1, backgroundColor: 'rgba(11,31,58,0.45)', justifyContent: 'flex-end' },
+    sheet: { backgroundColor: colors.card, borderTopLeftRadius: 16, borderTopRightRadius: 16, padding: 20, maxHeight: '60%' },
+    sheetTitle: { fontSize: 16, fontWeight: '700', color: colors.ink, marginBottom: 10 },
+    option: { paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border },
+    optionText: { fontSize: 15, color: colors.ink },
+    empty: { color: colors.inkMuted, textAlign: 'center', paddingVertical: 20 }
+  });
+}

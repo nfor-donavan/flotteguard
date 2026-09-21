@@ -2,8 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import client from '../api/client';
 import AddVehicleModal from '../components/AddVehicleModal';
+import { useLanguage } from '../context/LanguageContext';
+
+const statusKey = {
+  Available: 'status_available',
+  Rented: 'status_rented',
+  Active_Taxi: 'status_active_taxi',
+  Maintenance: 'status_maintenance'
+};
 
 export default function Vehicles() {
+  const { t } = useLanguage();
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
@@ -29,50 +38,50 @@ export default function Vehicles() {
     <>
       <div className="page-header">
         <div>
-          <h1>Vehicles</h1>
-          <p>{vehicles.length} vehicles in your fleet</p>
+          <h1>{t('vehicles_title')}</h1>
+          <p>{t('vehicles_subtitle', { count: vehicles.length })}</p>
         </div>
         <button className="btn btn-gold" onClick={() => setShowAddModal(true)}>
-          Add vehicle
+          {t('add_vehicle')}
         </button>
       </div>
 
       <div className="card" style={{ padding: 0 }}>
         {loading ? (
-          <p style={{ padding: 20 }}>Loading…</p>
+          <p style={{ padding: 20 }}>{t('loading')}</p>
         ) : vehicles.length === 0 ? (
-          <p style={{ padding: 20, color: 'var(--ink-muted)' }}>
-            No vehicles yet. Add your first one to get started.
-          </p>
+          <p style={{ padding: 20, color: 'var(--ink-muted)' }}>{t('no_vehicles')}</p>
         ) : (
-          <table>
-            <thead>
-              <tr>
-                <th>Plate</th>
-                <th>Make / model</th>
-                <th>Status</th>
-                <th>Mileage</th>
-                <th>Insurance expiry</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {vehicles.map((v) => (
-                <tr key={v._id}>
-                  <td>{v.plateNumber}</td>
-                  <td>{v.makeModel}</td>
-                  <td>
-                    <span className={`badge ${v.status.toLowerCase()}`}>{v.status.replace('_', ' ')}</span>
-                  </td>
-                  <td>{v.currentMileage.toLocaleString()} km</td>
-                  <td>{new Date(v.documents.insuranceExpiry).toLocaleDateString()}</td>
-                  <td>
-                    <Link to={`/vehicles/${v._id}`}>View</Link>
-                  </td>
+          <div className="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>{t('col_plate')}</th>
+                  <th>{t('col_make_model')}</th>
+                  <th>{t('col_status')}</th>
+                  <th>{t('col_mileage')}</th>
+                  <th>{t('col_insurance_expiry')}</th>
+                  <th></th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {vehicles.map((v) => (
+                  <tr key={v._id}>
+                    <td>{v.plateNumber}</td>
+                    <td>{v.makeModel}</td>
+                    <td>
+                      <span className={`badge ${v.status.toLowerCase()}`}>{t(statusKey[v.status] || v.status)}</span>
+                    </td>
+                    <td>{v.currentMileage.toLocaleString()} km</td>
+                    <td>{new Date(v.documents.insuranceExpiry).toLocaleDateString()}</td>
+                    <td>
+                      <Link to={`/vehicles/${v._id}`}>{t('view')}</Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

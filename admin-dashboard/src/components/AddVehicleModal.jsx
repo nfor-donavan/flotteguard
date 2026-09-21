@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
 import client from '../api/client';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function AddVehicleModal({ onClose, onCreated }) {
+  const { t } = useLanguage();
   const [form, setForm] = useState({
     plateNumber: '',
     makeModel: '',
@@ -46,48 +48,48 @@ export default function AddVehicleModal({ onClose, onCreated }) {
   }
 
   return (
-    <Modal title="Add vehicle" onClose={onClose}>
+    <Modal title={t('add_vehicle')} onClose={onClose}>
       <form onSubmit={handleSubmit}>
         <div className="form-field">
-          <label>Plate number</label>
+          <label>{t('plate_number')}</label>
           <input value={form.plateNumber} onChange={(e) => update('plateNumber', e.target.value)} placeholder="LT 123-AA" required />
         </div>
         <div className="form-field">
-          <label>Make / model</label>
+          <label>{t('make_model')}</label>
           <input value={form.makeModel} onChange={(e) => update('makeModel', e.target.value)} placeholder="Toyota Prado VIP" required />
         </div>
         <div className="form-field">
-          <label>Status</label>
+          <label>{t('status')}</label>
           <select value={form.status} onChange={(e) => update('status', e.target.value)}>
-            <option value="Available">Available</option>
-            <option value="Rented">Rented</option>
-            <option value="Active_Taxi">Active taxi</option>
-            <option value="Maintenance">Maintenance</option>
+            <option value="Available">{t('status_available')}</option>
+            <option value="Rented">{t('status_rented')}</option>
+            <option value="Active_Taxi">{t('status_active_taxi')}</option>
+            <option value="Maintenance">{t('status_maintenance')}</option>
           </select>
         </div>
         <div className="form-field">
-          <label>Current mileage (km)</label>
+          <label>{t('current_mileage')} (km)</label>
           <input type="number" value={form.currentMileage} onChange={(e) => update('currentMileage', e.target.value)} />
         </div>
         <div className="form-field">
-          <label>Next oil change at (km)</label>
+          <label>{t('next_oil_change')} (km)</label>
           <input type="number" value={form.nextOilChangeMileage} onChange={(e) => update('nextOilChangeMileage', e.target.value)} required />
         </div>
         <div className="form-field">
-          <label>Insurance expiry</label>
+          <label>{t('insurance_expiry')}</label>
           <input type="date" value={form.insuranceExpiry} onChange={(e) => update('insuranceExpiry', e.target.value)} required />
         </div>
         <div className="form-field">
-          <label>Vignette expiry</label>
+          <label>{t('vignette_expiry')}</label>
           <input type="date" value={form.vignetteExpiry} onChange={(e) => update('vignetteExpiry', e.target.value)} required />
         </div>
         <div className="form-field">
-          <label>Carte grise number</label>
+          <label>{t('carte_grise_number')}</label>
           <input value={form.carteGriseNumber} onChange={(e) => update('carteGriseNumber', e.target.value)} />
         </div>
         {error && <p className="error-text">{error}</p>}
         <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
-          {submitting ? 'Adding…' : 'Add vehicle'}
+          {submitting ? t('adding') : t('add_vehicle')}
         </button>
       </form>
     </Modal>

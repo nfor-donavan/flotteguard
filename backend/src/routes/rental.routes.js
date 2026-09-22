@@ -50,4 +50,46 @@ router.post('/:id/cancel', requireRole('owner', 'manager'), async (req, res) => 
   res.json({ contract });
 });
 
+const PAYMENT_STATUSES = ['Pending', 'Deposit_Paid', 'Fully_Paid', 'Refunded'];
+const CONTRACT_STATUSES = ['Confirmed', 'Cancelled', 'Completed'];
+
+/**
+ * Manual overrides for the two fields that would otherwise only ever
+ * change via the Mobile Money webhook (paymentStatus) or never change at
+ * all once confirmed (status -> Completed). Needed for day-to-day use
+ * before a live MoMo integration is wired up, and for cash payments,
+ * which never touch the webhook at all.
+ */
+router.patch('/:id', requireRole('owner', 'manager'), async (req, res) => {
+  const { paymentStatus, status } = req.body;
+  const updates = {};
+
+  if (paymentStatus !== undefined) {
+    if (!PAYMENT_STATUSES.includes(paymentStatus)) {
+      throw new ApiError(400, `paymentStatus must be one of: ${PAYMENT_STATUSES.join(', ')}`);
+    }
+    updates.paymentStatus = paymentStatus;
+  }
+
+  if (status !== undefined) {
+    if (!CONTRACT_STATUSES.includes(status)) {
+      throw new ApiError(400, `status must be one of: ${CONTRACT_STATUSES.join(', ')}`);
+    }
+    updates.status = status;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    throw new ApiError(400, 'Provide paymentStatus and/or status to update.');
+  }
+
+  const contract = await RentalContract.findOneAndUpdate(
+    { _id: req.params.id, tenantId: req.tenantId },
+    updates,
+    { new: true, runValidators: true }
+  ).populate('vehicleId', 'plateNumber makeModel');
+
+  if (!contract) throw new ApiError(404, 'Rental contract not found for this tenant');
+  res.json({ contract });
+});
+
 module.exports = router;

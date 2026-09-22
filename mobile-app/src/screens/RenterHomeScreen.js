@@ -13,7 +13,19 @@ export default function RenterHomeScreen({ navigation }) {
   const [vehicles, setVehicles] = useState([]);
 
   useEffect(() => {
-    client.get('/vehicles', { params: { status: 'Available' } }).then((res) => setVehicles(res.data.vehicles));
+    // Don't filter by status: 'Available' here - that field is a coarse
+    // label, not a per-date availability check. A vehicle sitting at
+    // "Rented" is only busy for whatever specific dates someone else
+    // booked - it can still be perfectly bookable for a different date
+    // range, which is exactly what the availability check on the Booking
+    // screen verifies. Filtering strictly on "Available" was hiding real
+    // rental candidates just because they had an unrelated booking on the
+    // books. Only exclude vehicles that structurally can't be rented at
+    // all: dedicated taxis and anything in maintenance.
+    client.get('/vehicles').then((res) => {
+      const rentable = res.data.vehicles.filter((v) => v.status !== 'Active_Taxi' && v.status !== 'Maintenance');
+      setVehicles(rentable);
+    });
   }, []);
 
   return (

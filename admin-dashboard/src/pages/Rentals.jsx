@@ -3,6 +3,19 @@ import client from '../api/client';
 import NewBookingModal from '../components/NewBookingModal';
 import { useLanguage } from '../context/LanguageContext';
 
+const paymentLabelKey = {
+  Pending: 'payment_status_pending',
+  Deposit_Paid: 'payment_status_deposit_paid',
+  Fully_Paid: 'payment_status_fully_paid',
+  Refunded: 'payment_status_refunded'
+};
+
+const contractStatusKey = {
+  Confirmed: 'contract_status_confirmed',
+  Cancelled: 'contract_status_cancelled',
+  Completed: 'contract_status_completed'
+};
+
 export default function Rentals() {
   const { t } = useLanguage();
   const [contracts, setContracts] = useState([]);
@@ -30,6 +43,21 @@ export default function Rentals() {
     if (!window.confirm(t('confirm_cancel_booking'))) return;
     await client.post(`/rentals/${id}/cancel`);
     load();
+  }
+
+  // Manual overrides for the two fields that otherwise only ever change
+  // via a live Mobile Money webhook (paymentStatus) or never change at all
+  // once confirmed (status -> Completed) - needed for cash payments and
+  // for closing out a rental once the vehicle's back, regardless of
+  // whether MoMo integration is live yet.
+  async function handlePaymentChange(id, paymentStatus) {
+    const { data } = await client.patch(`/rentals/${id}`, { paymentStatus });
+    setContracts((prev) => prev.map((c) => (c._id === id ? data.contract : c)));
+  }
+
+  async function handleMarkCompleted(id) {
+    const { data } = await client.patch(`/rentals/${id}`, { status: 'Completed' });
+    setContracts((prev) => prev.map((c) => (c._id === id ? data.contract : c)));
   }
 
   return (
@@ -73,16 +101,32 @@ export default function Rentals() {
                     </td>
                     <td>{c.totalCost.toLocaleString()} XAF</td>
                     <td>
-                      <span className={`badge ${c.paymentStatus.toLowerCase()}`}>{c.paymentStatus.replace('_', ' ')}</span>
+                      <select
+                        className="select-inline"
+                        value={c.paymentStatus}
+                        onChange={(e) => handlePaymentChange(c._id, e.target.value)}
+                        disabled={c.status === 'Cancelled'}
+                      >
+                        {Object.entries(paymentLabelKey).map(([value, key]) => (
+                          <option key={value} value={value}>
+                            {t(key)}
+                          </option>
+                        ))}
+                      </select>
                     </td>
                     <td>
-                      <span className={`badge ${c.status.toLowerCase()}`}>{c.status}</span>
+                      <span className={`badge ${c.status.toLowerCase()}`}>{t(contractStatusKey[c.status] || c.status)}</span>
                     </td>
                     <td>
                       {c.status === 'Confirmed' && (
-                        <a onClick={() => handleCancel(c._id)} style={{ cursor: 'pointer', color: 'var(--danger)' }}>
-                          {t('cancel')}
-                        </a>
+                        <div style={{ display: 'flex', gap: 12 }}>
+                          <a onClick={() => handleMarkCompleted(c._id)} style={{ cursor: 'pointer' }}>
+                            {t('mark_completed')}
+                          </a>
+                          <a onClick={() => handleCancel(c._id)} style={{ cursor: 'pointer', color: 'var(--danger)' }}>
+                            {t('cancel')}
+                          </a>
+                        </div>
                       )}
                     </td>
                   </tr>

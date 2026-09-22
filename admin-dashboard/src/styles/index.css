@@ -301,12 +301,12 @@ tr:last-child td {
   font-weight: 600;
 }
 
-.badge.available, .badge.settled, .badge.fully_paid, .badge.confirmed {
+.badge.available, .badge.settled, .badge.fully_paid, .badge.confirmed, .badge.completed {
   background: var(--success-bg);
   color: var(--success);
 }
 
-.badge.maintenance, .badge.shortfall, .badge.pending {
+.badge.maintenance, .badge.shortfall, .badge.pending, .badge.cancelled {
   background: var(--danger-bg);
   color: var(--danger);
 }
@@ -340,6 +340,17 @@ tr:last-child td {
 .btn-gold {
   background: var(--gold-500);
   color: var(--navy-950);
+}
+
+.select-inline {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--line);
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
 }
 
 .form-field {

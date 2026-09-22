@@ -1,4 +1,5 @@
 const express = require('express');
+const mongoose = require('mongoose');
 const Tenant = require('../models/Tenant');
 const User = require('../models/User');
 const Vehicle = require('../models/Vehicle');
@@ -38,7 +39,13 @@ router.get('/staff', requireRole('owner', 'manager'), async (req, res) => {
  * upcoming rental revenue.
  */
 router.get('/dashboard-summary', requireRole('owner', 'manager'), async (req, res) => {
-  const tenantId = req.tenantId;
+  // req.tenantId is a plain string (it comes straight off the JWT).
+  // Vehicle.find({ tenantId }) auto-casts that string against the
+  // ObjectId field, but the aggregation pipeline below does NOT - $match
+  // needs an actual ObjectId or it silently matches nothing. This cast is
+  // what was making the dashboard show zero vehicles even though the
+  // Vehicles tab had real data.
+  const tenantId = new mongoose.Types.ObjectId(req.tenantId);
   const startOfMonth = new Date();
   startOfMonth.setUTCDate(1);
   startOfMonth.setUTCHours(0, 0, 0, 0);

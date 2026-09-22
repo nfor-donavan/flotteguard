@@ -10,21 +10,43 @@ const statusKey = {
   Maintenance: 'status_maintenance'
 };
 
+// Turns a stored ISO date into the yyyy-MM-dd string an <input type="date">
+// needs, without a timezone shift (toISOString() alone can roll the date
+// back a day depending on the browser's local timezone).
+function toDateInputValue(isoDate) {
+  const d = new Date(isoDate);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 export default function VehicleDetail() {
   const { t } = useLanguage();
   const { id } = useParams();
   const navigate = useNavigate();
   const [vehicle, setVehicle] = useState(null);
   const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({ status: '', currentMileage: '' });
+  const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   function load() {
     client.get(`/vehicles/${id}`).then((res) => {
       setVehicle(res.data.vehicle);
-      setForm({ status: res.data.vehicle.status, currentMileage: res.data.vehicle.currentMileage });
+      setForm(vehicleToForm(res.data.vehicle));
     });
+  }
+
+  function vehicleToForm(v) {
+    return {
+      status: v.status,
+      currentMileage: v.currentMileage,
+      nextOilChangeMileage: v.nextOilChangeMileage,
+      insuranceExpiry: toDateInputValue(v.documents.insuranceExpiry),
+      vignetteExpiry: toDateInputValue(v.documents.vignetteExpiry),
+      carteGriseNumber: v.documents.carteGriseNumber || ''
+    };
   }
 
   useEffect(() => {
@@ -36,11 +58,23 @@ export default function VehicleDetail() {
     setError('');
     setSaving(true);
     try {
+      // Always send the full "documents" object, not just the field that
+      // changed. The backend does a plain findOneAndUpdate, which replaces
+      // a nested object wholesale rather than merging it field by field -
+      // sending only { insuranceExpiry } here would silently wipe out
+      // vignetteExpiry and carteGriseNumber on save.
       const { data } = await client.patch(`/vehicles/${id}`, {
         status: form.status,
-        currentMileage: Number(form.currentMileage)
+        currentMileage: Number(form.currentMileage),
+        nextOilChangeMileage: Number(form.nextOilChangeMileage),
+        documents: {
+          insuranceExpiry: form.insuranceExpiry,
+          vignetteExpiry: form.vignetteExpiry,
+          carteGriseNumber: form.carteGriseNumber
+        }
       });
       setVehicle(data.vehicle);
+      setForm(vehicleToForm(data.vehicle));
       setEditing(false);
     } catch (err) {
       setError(err.response?.data?.error || 'Could not save changes.');
@@ -55,7 +89,7 @@ export default function VehicleDetail() {
     navigate('/vehicles');
   }
 
-  if (!vehicle) return <p>{t('loading')}</p>;
+  if (!vehicle || !form) return <p>{t('loading')}</p>;
 
   return (
     <>
@@ -75,23 +109,68 @@ export default function VehicleDetail() {
       {editing && (
         <div className="card" style={{ marginBottom: 24 }}>
           <form onSubmit={handleSave}>
-            <div className="form-field">
-              <label>{t('status')}</label>
-              <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
-                <option value="Available">{t('status_available')}</option>
-                <option value="Rented">{t('status_rented')}</option>
-                <option value="Active_Taxi">{t('status_active_taxi')}</option>
-                <option value="Maintenance">{t('status_maintenance')}</option>
-              </select>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div className="form-field" style={{ flex: 1 }}>
+                <label>{t('status')}</label>
+                <select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
+                  <option value="Available">{t('status_available')}</option>
+                  <option value="Rented">{t('status_rented')}</option>
+                  <option value="Active_Taxi">{t('status_active_taxi')}</option>
+                  <option value="Maintenance">{t('status_maintenance')}</option>
+                </select>
+              </div>
+              <div className="form-field" style={{ flex: 1 }}>
+                <label>{t('current_mileage')} (km)</label>
+                <input
+                  type="number"
+                  value={form.currentMileage}
+                  onChange={(e) => setForm((f) => ({ ...f, currentMileage: e.target.value }))}
+                />
+              </div>
             </div>
+
             <div className="form-field">
-              <label>{t('current_mileage')} (km)</label>
+              <label>{t('next_oil_change')} (km)</label>
               <input
                 type="number"
-                value={form.currentMileage}
-                onChange={(e) => setForm((f) => ({ ...f, currentMileage: e.target.value }))}
+                value={form.nextOilChangeMileage}
+                onChange={(e) => setForm((f) => ({ ...f, nextOilChangeMileage: e.target.value }))}
               />
             </div>
+
+            {/* This is the part that was missing: renewing a document just
+                means picking a new date here and saving - no separate
+                "renew" flow needed, and no risk of the old date sticking
+                around once it's expired. */}
+            <div style={{ display: 'flex', gap: 12 }}>
+              <div className="form-field" style={{ flex: 1 }}>
+                <label>{t('insurance_expiry')}</label>
+                <input
+                  type="date"
+                  value={form.insuranceExpiry}
+                  onChange={(e) => setForm((f) => ({ ...f, insuranceExpiry: e.target.value }))}
+                  required
+                />
+              </div>
+              <div className="form-field" style={{ flex: 1 }}>
+                <label>{t('vignette_expiry')}</label>
+                <input
+                  type="date"
+                  value={form.vignetteExpiry}
+                  onChange={(e) => setForm((f) => ({ ...f, vignetteExpiry: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-field">
+              <label>{t('carte_grise_number')}</label>
+              <input
+                value={form.carteGriseNumber}
+                onChange={(e) => setForm((f) => ({ ...f, carteGriseNumber: e.target.value }))}
+              />
+            </div>
+
             {error && <p className="error-text">{error}</p>}
             <div style={{ display: 'flex', gap: 10 }}>
               <button className="btn btn-primary" disabled={saving}>

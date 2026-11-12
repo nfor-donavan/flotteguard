@@ -37,7 +37,13 @@ export default function Login() {
           <span>{t('login_title')}</span>
         </div>
         <div className="login-tagline">{t('login_tagline')}</div>
-        <div className="login-copyright">{t('copyright', { year })}</div>
+        <div className="login-footer-brand">
+          <div className="login-copyright">{t('copyright', { year })}</div>
+          <div className="login-powered-by">
+            <img src="/nexus-emblem.png" alt="Nexus Tech Labs" />
+            <span>{t('powered_by')}</span>
+          </div>
+        </div>
       </div>
 
       <div className="login-form-panel">
@@ -70,6 +76,10 @@ export default function Login() {
           </form>
 
           <p className="login-mobile-copyright">{t('copyright', { year })}</p>
+          <div className="login-mobile-powered-by">
+            <img src="/nexus-emblem.png" alt="Nexus Tech Labs" />
+            <span>{t('powered_by')}</span>
+          </div>
         </div>
       </div>
     </div>

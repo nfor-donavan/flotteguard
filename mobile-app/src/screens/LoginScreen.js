@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, KeyboardAvoidingView, ScrollView, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -59,30 +59,55 @@ export default function LoginScreen() {
         <Text style={styles.subtitle}>{t('login_tagline')}</Text>
       </LinearGradient>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.formSheet}>
-        <TextInput
-          style={styles.input}
-          placeholder={t('phone_number')}
-          placeholderTextColor={colors.inkMuted}
-          keyboardType="phone-pad"
-          value={phone}
-          onChangeText={setPhone}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder={t('password')}
-          placeholderTextColor={colors.inkMuted}
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-        />
-        {error ? <Text style={styles.error}>{error}</Text> : null}
+      {/* A single flex:1 footer pinned via marginTop:'auto' breaks the moment
+          the keyboard opens - on Android there was no keyboard-avoidance
+          behavior at all, so the footer would slide up and overlap the
+          inputs. KeyboardAvoidingView + a ScrollView whose content uses
+          flexGrow:1/justifyContent:'space-between' keeps the same pinned-
+          footer look when the keyboard is closed, but gracefully scrolls
+          instead of overlapping once it opens. */}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.formSheet}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 24}
+      >
+        <ScrollView
+          contentContainerStyle={styles.formScrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View>
+            <TextInput
+              style={styles.input}
+              placeholder={t('phone_number')}
+              placeholderTextColor={colors.inkMuted}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder={t('password')}
+              placeholderTextColor={colors.inkMuted}
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={submitting}>
-          <Text style={styles.buttonText}>{submitting ? t('signing_in') : t('sign_in')}</Text>
-        </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={submitting}>
+              <Text style={styles.buttonText}>{submitting ? t('signing_in') : t('sign_in')}</Text>
+            </TouchableOpacity>
+          </View>
 
-        <Text style={styles.copyright}>{t('copyright', { year })}</Text>
+          <View style={styles.footer}>
+            <Text style={styles.copyright}>{t('copyright', { year })}</Text>
+            <View style={styles.poweredByRow}>
+              <Image source={require('../../assets/nexus-emblem.png')} style={styles.poweredByLogo} />
+              <Text style={styles.poweredByText}>{t('powered_by')}</Text>
+            </View>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </ScreenContainer>
   );
@@ -116,7 +141,11 @@ function createStyles(colors) {
       flex: 1,
       backgroundColor: colors.card,
       borderTopLeftRadius: 28,
-      borderTopRightRadius: 28,
+      borderTopRightRadius: 28
+    },
+    formScrollContent: {
+      flexGrow: 1,
+      justifyContent: 'space-between',
       padding: 24,
       paddingTop: 32
     },
@@ -133,6 +162,19 @@ function createStyles(colors) {
     button: { backgroundColor: colors.gold, borderRadius: 10, padding: 14, alignItems: 'center', marginTop: 6 },
     buttonText: { color: colors.navy, fontWeight: '700', fontSize: 15 },
     error: { color: colors.danger, marginBottom: 8, fontSize: 13 },
-    copyright: { textAlign: 'center', color: colors.inkMuted, fontSize: 12, marginTop: 'auto', paddingTop: 24 }
+    footer: { paddingTop: 24 },
+    copyright: { textAlign: 'center', color: colors.inkMuted, fontSize: 12 },
+    poweredByRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      marginTop: 10,
+      paddingTop: 10,
+      borderTopWidth: 1,
+      borderTopColor: colors.border
+    },
+    poweredByLogo: { width: 16, height: 16, borderRadius: 4 },
+    poweredByText: { fontSize: 10.5, fontWeight: '600', color: colors.inkMuted, letterSpacing: 0.2 }
   });
 }

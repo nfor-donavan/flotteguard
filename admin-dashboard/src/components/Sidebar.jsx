@@ -42,6 +42,10 @@ export default function Sidebar({ isOpen, onNavigate }) {
         <a onClick={logout} style={{ cursor: 'pointer' }}>
           {t('sign_out')}
         </a>
+        <div className="sidebar-powered-by">
+          <img src="/nexus-emblem.png" alt="Nexus Tech Labs" />
+          <span>{t('powered_by')}</span>
+        </div>
       </div>
     </aside>
   );

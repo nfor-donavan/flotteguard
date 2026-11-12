@@ -8,6 +8,7 @@ export default {
   signing_in: 'Connexion…',
   login_error: 'Connexion impossible. Vérifiez votre numéro et votre mot de passe.',
   copyright: '© {year} FlotteGuard. Tous droits réservés.',
+  powered_by: 'Un produit de Nexus Tech Labs',
 
   daily_turn_in: 'Versement quotidien',
   greeting_turn_in: 'Bonjour {name}, enregistrez la recette du jour',

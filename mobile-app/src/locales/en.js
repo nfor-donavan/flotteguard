@@ -8,6 +8,7 @@ export default {
   signing_in: 'Signing in…',
   login_error: 'Could not sign in. Check your phone number and password.',
   copyright: '© {year} FlotteGuard. All rights reserved.',
+  powered_by: 'A product of Nexus Tech Labs',
 
   daily_turn_in: 'Daily turn-in',
   greeting_turn_in: "Hi {name}, log today's recette",

@@ -18,6 +18,7 @@ export default {
   signing_in: 'Connexion…',
   login_error_default: 'Connexion impossible. Vérifiez vos informations et réessayez.',
   copyright: '© {year} FlotteGuard. Tous droits réservés.',
+  powered_by: 'Un produit de Nexus Tech Labs',
 
   // Dashboard
   dashboard_subtitle: 'Santé de la flotte et encaissements du mois en un coup d\u2019œil.',

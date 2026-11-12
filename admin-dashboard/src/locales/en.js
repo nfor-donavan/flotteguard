@@ -18,6 +18,7 @@ export default {
   signing_in: 'Signing in…',
   login_error_default: 'Could not sign in. Check your details and try again.',
   copyright: '© {year} FlotteGuard. All rights reserved.',
+  powered_by: 'A product of Nexus Tech Labs',
 
   // Dashboard
   dashboard_subtitle: "Fleet health and this month's collections at a glance.",

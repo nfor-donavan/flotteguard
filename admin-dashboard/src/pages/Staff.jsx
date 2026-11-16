@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import client from '../api/client';
 import Modal from '../components/Modal';
+import Avatar from '../components/Avatar';
+import Icon from '../components/Icon';
+import EmptyState from '../components/EmptyState';
+import { SkeletonTable } from '../components/Skeleton';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Staff() {
@@ -48,13 +52,16 @@ export default function Staff() {
           <p>{t('staff_subtitle')}</p>
         </div>
         <button className="btn btn-gold" onClick={() => setShowModal(true)}>
+          <Icon name="plus" size={16} />
           {t('add_person')}
         </button>
       </div>
 
-      <div className="card" style={{ padding: 0 }}>
+      <div className="card flush">
         {loading ? (
-          <p style={{ padding: 20 }}>{t('loading')}</p>
+          <SkeletonTable />
+        ) : users.length === 0 ? (
+          <EmptyState icon="users" title={t('no_staff_title')} text={t('no_staff_text')} />
         ) : (
           <div className="table-scroll">
             <table>
@@ -68,9 +75,16 @@ export default function Staff() {
               <tbody>
                 {users.map((u) => (
                   <tr key={u._id}>
-                    <td>{u.name}</td>
+                    <td>
+                      <div className="cell-media">
+                        <Avatar name={u.name} src={u.photoUrl} size={32} />
+                        <b>{u.name}</b>
+                      </div>
+                    </td>
                     <td>{u.phone}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{u.role}</td>
+                    <td>
+                      <span className={`role-pill ${u.role}`}>{t(`role_${u.role}`) === `role_${u.role}` ? u.role : t(`role_${u.role}`)}</span>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -108,7 +122,7 @@ export default function Staff() {
               />
             </div>
             {error && <p className="error-text">{error}</p>}
-            <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
+            <button className="btn btn-primary btn-block" disabled={submitting}>
               {submitting ? t('adding') : t('add_person')}
             </button>
           </form>

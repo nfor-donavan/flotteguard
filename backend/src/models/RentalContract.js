@@ -7,6 +7,7 @@ const RentalContractSchema = new mongoose.Schema(
     clientName: { type: String, required: true, trim: true },
     clientPhone: { type: String, required: true, trim: true },
     clientIdPassport: { type: String, required: true, trim: true },
+    driverId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', index: true }, // optional chauffeur
     clientIdPhotoUrl: { type: String, trim: true }, // Cloudinary URL for uploaded ID/passport photo
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },

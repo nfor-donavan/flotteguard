@@ -12,7 +12,9 @@ export const lightColors = {
   border: '#E4E7EF',
   success: '#1F9D55',
   danger: '#D64545',
-  white: '#FFFFFF'
+  white: '#FFFFFF',
+  skeleton: '#E6E9F1',
+  goldSoft: '#FEF3E2'
 };
 
 export const darkColors = {
@@ -27,5 +29,22 @@ export const darkColors = {
   border: '#223049',
   success: '#3DDC84',
   danger: '#FF6B6B',
-  white: '#FFFFFF'
+  white: '#FFFFFF',
+  skeleton: '#1B2740',
+  goldSoft: 'rgba(242,169,59,0.16)'
 };
+
+// Shared spacing / radius / elevation scale so cards look like one family.
+export const radius = { sm: 10, md: 16, lg: 20, xl: 28 };
+export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 28 };
+
+export function shadow(level = 1) {
+  const o = level === 2 ? 0.16 : 0.08;
+  return {
+    shadowColor: '#0B1F3A',
+    shadowOffset: { width: 0, height: level === 2 ? 8 : 3 },
+    shadowOpacity: o,
+    shadowRadius: level === 2 ? 16 : 8,
+    elevation: level === 2 ? 6 : 2
+  };
+}

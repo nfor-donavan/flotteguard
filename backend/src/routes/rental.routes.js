@@ -1,5 +1,6 @@
 const express = require('express');
 const RentalContract = require('../models/RentalContract');
+const User = require('../models/User');
 const ApiError = require('../utils/ApiError');
 const { requireAuth, requireRole } = require('../middleware/auth');
 const tenantScope = require('../middleware/tenantScope');
@@ -19,7 +20,10 @@ router.get('/', async (req, res) => {
   const filter = { tenantId: req.tenantId };
   if (vehicleId) filter.vehicleId = vehicleId;
   if (status) filter.status = status;
-  const contracts = await RentalContract.find(filter).sort({ startDate: -1 }).populate('vehicleId', 'plateNumber makeModel');
+  const contracts = await RentalContract.find(filter)
+    .sort({ startDate: -1 })
+    .populate('vehicleId', 'plateNumber makeModel photos')
+    .populate('driverId', 'name phone photoUrl');
   res.json({ contracts });
 });
 
@@ -41,6 +45,23 @@ router.get('/availability', async (req, res) => {
 // The one route where double-booking safety actually matters - goes
 // through bookingService, never a plain RentalContract.create().
 router.post('/', requireRole('owner', 'manager', 'renter'), async (req, res) => {
+  const { driverId, startDate, endDate } = req.body;
+  if (driverId) {
+    // Chauffeur must be an active driver of THIS tenant and free on these dates.
+    const driver = await User.findOne({ _id: driverId, tenantId: req.tenantId, role: 'driver', isActive: true });
+    if (!driver) throw new ApiError(404, 'Driver not found for this tenant');
+    const clash = await RentalContract.findOne({
+      tenantId: req.tenantId,
+      driverId,
+      status: { $ne: 'Cancelled' },
+      startDate: { $lt: new Date(endDate) },
+      endDate: { $gt: new Date(startDate) }
+    });
+    // Check-then-create (not transactional like vehicles): two simultaneous bookings
+    // of the same driver could in theory both pass. Acceptable for a chauffeur
+    // assignment that staff can reassign; vehicles keep the hard guarantee.
+    if (clash) throw new ApiError(409, 'This driver is already assigned for part of the requested dates.');
+  }
   const contract = await createRentalBooking({ tenantId: req.tenantId, ...req.body });
   res.status(201).json({ contract });
 });

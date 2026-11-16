@@ -14,8 +14,11 @@ export default function NewBookingModal({ onClose, onCreated }) {
     startDate: '',
     endDate: '',
     securityDeposit: '',
-    totalCost: ''
+    totalCost: '',
+    driverId: ''
   });
+  const [drivers, setDrivers] = useState([]);
+  const [loadingDrivers, setLoadingDrivers] = useState(false);
   const [availability, setAvailability] = useState(null);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [error, setError] = useState('');
@@ -43,6 +46,28 @@ export default function NewBookingModal({ onClose, onCreated }) {
     return () => clearTimeout(timeout);
   }, [form.vehicleId, form.startDate, form.endDate]);
 
+  // Only drivers free for the chosen dates can be assigned. If the dates
+  // change and the current pick becomes busy, clear it.
+  useEffect(() => {
+    if (!form.startDate || !form.endDate) {
+      setDrivers([]);
+      return;
+    }
+    setLoadingDrivers(true);
+    client
+      .get('/drivers', { params: { startDate: form.startDate, endDate: form.endDate } })
+      .then((res) => {
+        const list = res.data.drivers || [];
+        setDrivers(list);
+        setForm((f) => {
+          const pick = list.find((d) => d._id === f.driverId);
+          return pick && pick.available === false ? { ...f, driverId: '' } : f;
+        });
+      })
+      .catch(() => setDrivers([]))
+      .finally(() => setLoadingDrivers(false));
+  }, [form.startDate, form.endDate]);
+
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
   }
@@ -52,14 +77,18 @@ export default function NewBookingModal({ onClose, onCreated }) {
     setError('');
     setSubmitting(true);
     try {
+      const { driverId, ...rest } = form;
       const { data } = await client.post('/rentals', {
-        ...form,
+        ...rest,
+        ...(driverId ? { driverId } : {}),
         securityDeposit: Number(form.securityDeposit) || 0,
         totalCost: Number(form.totalCost) || 0
       });
       onCreated(data.contract);
     } catch (err) {
-      const message = err.response?.status === 409 ? t('booking_conflict_error') : err.response?.data?.error || t('booking_generic_error');
+      const serverMessage = err.response?.data?.error || '';
+      let message = err.response?.status === 409 ? t('booking_conflict_error') : serverMessage || t('booking_generic_error');
+      if (err.response?.status === 409 && /driver/i.test(serverMessage)) message = t('driver_conflict_error');
       setError(message);
     } finally {
       setSubmitting(false);
@@ -82,20 +111,34 @@ export default function NewBookingModal({ onClose, onCreated }) {
             ))}
           </select>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div className="form-field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="form-field">
             <label>{t('start_date')}</label>
             <input type="date" value={form.startDate} onChange={(e) => update('startDate', e.target.value)} required />
           </div>
-          <div className="form-field" style={{ flex: 1 }}>
+          <div className="form-field">
             <label>{t('end_date')}</label>
             <input type="date" value={form.endDate} onChange={(e) => update('endDate', e.target.value)} required />
           </div>
         </div>
 
-        {checkingAvailability && <p style={{ fontSize: 13, color: 'var(--ink-muted)', marginTop: -8 }}>{t('checking_availability')}</p>}
-        {availability === true && <p style={{ fontSize: 13, color: 'var(--success)', marginTop: -8 }}>{t('available_for_dates')}</p>}
-        {availability === false && <p className="error-text" style={{ marginTop: -8 }}>{t('already_booked')}</p>}
+        {checkingAvailability && <p className="hint-line">{t('checking_availability')}</p>}
+        {availability === true && <p className="hint-line ok">{t('available_for_dates')}</p>}
+        {availability === false && <p className="hint-line bad">{t('already_booked')}</p>}
+
+        <div className="form-field">
+          <label>{t('chauffeur_optional')}</label>
+          <select value={form.driverId} onChange={(e) => update('driverId', e.target.value)} disabled={!form.startDate || !form.endDate || loadingDrivers}>
+            <option value="">{t('self_drive')}</option>
+            {drivers.map((d) => (
+              <option key={d._id} value={d._id} disabled={d.available === false}>
+                {d.name}
+                {d.available === false ? ` — ${t('driver_busy')}` : ''}
+              </option>
+            ))}
+          </select>
+          {(!form.startDate || !form.endDate) && <span className="muted-small">{t('pick_dates_for_drivers')}</span>}
+        </div>
 
         <div className="form-field">
           <label>{t('client_name')}</label>
@@ -109,12 +152,12 @@ export default function NewBookingModal({ onClose, onCreated }) {
           <label>{t('id_passport_number')}</label>
           <input value={form.clientIdPassport} onChange={(e) => update('clientIdPassport', e.target.value)} required />
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <div className="form-field" style={{ flex: 1 }}>
+        <div className="form-row">
+          <div className="form-field">
             <label>{t('security_deposit')}</label>
             <input type="number" value={form.securityDeposit} onChange={(e) => update('securityDeposit', e.target.value)} required />
           </div>
-          <div className="form-field" style={{ flex: 1 }}>
+          <div className="form-field">
             <label>{t('total_cost')}</label>
             <input type="number" value={form.totalCost} onChange={(e) => update('totalCost', e.target.value)} required />
           </div>
@@ -122,8 +165,7 @@ export default function NewBookingModal({ onClose, onCreated }) {
 
         {error && <p className="error-text">{error}</p>}
         <button
-          className="btn btn-primary"
-          style={{ width: '100%', justifyContent: 'center' }}
+          className="btn btn-primary btn-block"
           disabled={submitting || availability === false}
         >
           {submitting ? t('booking') : t('confirm_booking')}

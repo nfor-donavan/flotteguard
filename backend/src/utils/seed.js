@@ -46,11 +46,32 @@ async function seed() {
   });
 
   const passwordHash = await User.hashPassword('changeme123');
-  const [owner, manager, driver1, driver2, renter] = await User.create([
+  // Drivers: Aminatou & Joel run the taxis; Serge & Nadine are chauffeurs
+  // customers can book with their rental. Photos are bundled demo portraits
+  // (relative '/demo/...' paths; clients resolve them against the API origin).
+  const [owner, manager, driver1, driver2, driver3, driver4, renter] = await User.create([
     { tenantId: tenant._id, name: 'Fotso Owner', phone: '+237600000000', role: 'owner', passwordHash },
     { tenantId: tenant._id, name: 'Brenda Manager', phone: '+237600000002', role: 'manager', passwordHash },
-    { tenantId: tenant._id, name: 'Aminatou Driver', phone: '+237600000001', role: 'driver', passwordHash },
-    { tenantId: tenant._id, name: 'Joel Mbarga', phone: '+237600000003', role: 'driver', passwordHash },
+    {
+      tenantId: tenant._id, name: 'Aminatou Driver', phone: '+237600000001', role: 'driver', passwordHash,
+      photoUrl: '/demo/drivers/aminatou.jpg',
+      driverProfile: { licenseNumber: 'CM-DL-204518', licenseExpiry: daysFromNow(400), yearsExperience: 8, languages: ['French', 'English'], bio: 'Reliable city taxi driver who knows every shortcut in Douala.' }
+    },
+    {
+      tenantId: tenant._id, name: 'Joel Mbarga', phone: '+237600000003', role: 'driver', passwordHash,
+      photoUrl: '/demo/drivers/joel.jpg',
+      driverProfile: { licenseNumber: 'CM-DL-118442', licenseExpiry: daysFromNow(20), yearsExperience: 5, languages: ['French', 'English'], bio: 'Minibus specialist, calm and punctual on long routes.' }
+    },
+    {
+      tenantId: tenant._id, name: 'Serge Kamga', phone: '+237600000005', role: 'driver', passwordHash,
+      photoUrl: '/demo/drivers/serge.jpg',
+      driverProfile: { licenseNumber: 'CM-DL-330917', licenseExpiry: daysFromNow(700), yearsExperience: 12, languages: ['French', 'English', 'Ewondo'], bio: 'Executive chauffeur for airport transfers, weddings and business trips.' }
+    },
+    {
+      tenantId: tenant._id, name: 'Nadine Fomba', phone: '+237600000006', role: 'driver', passwordHash,
+      photoUrl: '/demo/drivers/nadine.jpg',
+      driverProfile: { licenseNumber: 'CM-DL-427760', licenseExpiry: daysFromNow(520), yearsExperience: 6, languages: ['French', 'English'], bio: 'Friendly, safety-first driver - great for family trips and tourists.' }
+    },
     { tenantId: tenant._id, name: 'Carine Nguema', phone: '+237600000004', role: 'renter', passwordHash }
   ]);
 
@@ -58,7 +79,7 @@ async function seed() {
   // expiry dates - some already overdue, some inside the 7-day alert
   // window, and most comfortably valid - so the document-expiry alerting
   // and dashboard stats both have something real to show in a demo.
-  const [vipPrado, luxuryCoupe, corollaTaxi, hiaceTaxi, pickup, sedanInMx] = await Vehicle.create([
+  const [vipPrado, luxuryCoupe, corollaTaxi, hiaceTaxi, pickup, sedanInMx, sportage] = await Vehicle.create([
     {
       tenantId: tenant._id,
       plateNumber: 'LT 123-AA',
@@ -66,6 +87,7 @@ async function seed() {
       status: 'Available',
       currentMileage: 42000,
       nextOilChangeMileage: 47000,
+      photos: ['/demo/vehicles/prado-1.jpg', '/demo/vehicles/prado-2.jpg'],
       documents: {
         insuranceExpiry: daysFromNow(3),
         vignetteExpiry: daysFromNow(90),
@@ -79,6 +101,7 @@ async function seed() {
       status: 'Available',
       currentMileage: 18500,
       nextOilChangeMileage: 25000,
+      photos: ['/demo/vehicles/eclass-1.jpg', '/demo/vehicles/eclass-2.jpg'],
       documents: {
         insuranceExpiry: daysFromNow(140),
         vignetteExpiry: daysFromNow(200),
@@ -92,6 +115,7 @@ async function seed() {
       status: 'Active_Taxi',
       currentMileage: 120000,
       nextOilChangeMileage: 125000,
+      photos: ['/demo/vehicles/corolla-1.jpg', '/demo/vehicles/corolla-2.jpg'],
       documents: {
         insuranceExpiry: daysFromNow(60),
         vignetteExpiry: daysFromNow(60),
@@ -105,6 +129,7 @@ async function seed() {
       status: 'Active_Taxi',
       currentMileage: 95000,
       nextOilChangeMileage: 100000,
+      photos: ['/demo/vehicles/hiace-1.jpg', '/demo/vehicles/hiace-2.jpg'],
       documents: {
         // Already expired - demonstrates the "roadside impoundment risk"
         // alert firing for a document that was never renewed in time.
@@ -120,6 +145,14 @@ async function seed() {
       status: 'Maintenance',
       currentMileage: 76000,
       nextOilChangeMileage: 76500,
+      photos: ['/demo/vehicles/pickup-1.jpg', '/demo/vehicles/pickup-2.jpg'],
+      maintenance: {
+        issue: 'Engine overheating: radiator is leaking coolant and the front brake discs are scored. Do not rent out until repaired.',
+        severity: 'High',
+        reportedAt: daysFromNow(-3),
+        expectedReadyDate: daysFromNow(4),
+        photos: ['/demo/issues/pickup-issue-1.jpg', '/demo/issues/pickup-issue-2.jpg']
+      },
       documents: {
         insuranceExpiry: daysFromNow(45),
         vignetteExpiry: daysFromNow(45),
@@ -133,11 +166,33 @@ async function seed() {
       status: 'Available',
       currentMileage: 31000,
       nextOilChangeMileage: 36000,
+      photos: ['/demo/vehicles/elantra-1.jpg', '/demo/vehicles/elantra-2.jpg'],
       documents: {
         // Inside the 7-day regulatory alert window.
         insuranceExpiry: daysFromNow(150),
         vignetteExpiry: daysFromNow(5),
         carteGriseNumber: 'CG-00512'
+      }
+    },
+    {
+      tenantId: tenant._id,
+      plateNumber: 'LT 868-GG',
+      makeModel: 'Kia Sportage',
+      status: 'Maintenance',
+      currentMileage: 54000,
+      nextOilChangeMileage: 58000,
+      photos: ['/demo/vehicles/sportage-1.jpg', '/demo/vehicles/sportage-2.jpg'],
+      maintenance: {
+        issue: 'Cracked windscreen (driver side) and dented front bumper after a minor collision. Waiting on replacement glass.',
+        severity: 'Medium',
+        reportedAt: daysFromNow(-1),
+        expectedReadyDate: daysFromNow(8),
+        photos: ['/demo/issues/sportage-issue-1.jpg', '/demo/issues/sportage-issue-2.jpg']
+      },
+      documents: {
+        insuranceExpiry: daysFromNow(210),
+        vignetteExpiry: daysFromNow(180),
+        carteGriseNumber: 'CG-00868'
       }
     }
   ]);
@@ -180,6 +235,7 @@ async function seed() {
     clientName: 'Carine Nguema',
     clientPhone: '+237600000004',
     clientIdPassport: 'CNI-0098712',
+    driverId: driver3._id, // chauffeur-driven rental
     securityDeposit: 80000,
     totalCost: 150000,
     paymentStatus: 'Deposit_Paid'
@@ -193,6 +249,7 @@ async function seed() {
     clientName: 'Eric Talla',
     clientPhone: '+237655112233',
     clientIdPassport: 'PASS-FR0045521',
+    driverId: driver4._id,
     securityDeposit: 120000,
     totalCost: 260000,
     paymentStatus: 'Fully_Paid',
@@ -227,7 +284,11 @@ async function seed() {
   });
   await cancelRentalBooking({ tenantId: tenant._id, rentalContractId: toCancelBooking._id });
 
-  void manager; // reserved for future role-based demo flows
+  void manager;
+  void owner;
+  void renter;
+  void pickup;
+  void sportage;
 
   console.log('Seed complete.');
   console.log('  Owner login:   +237600000000 / changeme123');

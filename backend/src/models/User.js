@@ -19,7 +19,16 @@ const UserSchema = new mongoose.Schema(
     email: { type: String, trim: true, lowercase: true },
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ROLES, required: true },
-    isActive: { type: Boolean, default: true }
+    isActive: { type: Boolean, default: true },
+    photoUrl: { type: String, trim: true },
+    // Shown to customers who may book a chauffeur (licenseNumber is staff-only).
+    driverProfile: {
+      licenseNumber: { type: String, trim: true },
+      licenseExpiry: Date,
+      yearsExperience: { type: Number, min: 0 },
+      languages: { type: [String], default: [] },
+      bio: { type: String, trim: true, maxlength: 400 }
+    }
   },
   { timestamps: true }
 );

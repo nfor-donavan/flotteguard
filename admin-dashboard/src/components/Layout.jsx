@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from './Sidebar';
+import Icon from './Icon';
 
 export default function Layout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,7 +13,7 @@ export default function Layout({ children }) {
           <span>FlotteGuard</span>
         </div>
         <button className="hamburger" onClick={() => setSidebarOpen(true)} aria-label="Open menu">
-          ☰
+          <Icon name="list" size={22} />
         </button>
       </div>
 

@@ -3,6 +3,8 @@ import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import Icon from './Icon';
+import Avatar from './Avatar';
 
 export default function Sidebar({ isOpen, onNavigate }) {
   const { logout, user } = useAuth();
@@ -10,11 +12,12 @@ export default function Sidebar({ isOpen, onNavigate }) {
   const { lang, toggleLanguage, t } = useLanguage();
 
   const links = [
-    { to: '/', label: t('nav_dashboard'), end: true },
-    { to: '/vehicles', label: t('nav_vehicles') },
-    { to: '/rentals', label: t('nav_rentals') },
-    { to: '/daily-logs', label: t('nav_daily_logs') },
-    { to: '/staff', label: t('nav_staff') }
+    { to: '/', label: t('nav_dashboard'), icon: 'dashboard', end: true },
+    { to: '/vehicles', label: t('nav_vehicles'), icon: 'car' },
+    { to: '/rentals', label: t('nav_rentals'), icon: 'key' },
+    { to: '/drivers', label: t('nav_drivers'), icon: 'steering' },
+    { to: '/daily-logs', label: t('nav_daily_logs'), icon: 'receipt' },
+    { to: '/staff', label: t('nav_staff'), icon: 'users' }
   ];
 
   return (
@@ -23,13 +26,17 @@ export default function Sidebar({ isOpen, onNavigate }) {
         <img src="/icon.png" alt="FlotteGuard" />
         <span>FlotteGuard</span>
       </div>
-      {links.map((l) => (
-        <NavLink key={l.to} to={l.to} end={l.end} onClick={onNavigate} className={({ isActive }) => (isActive ? 'active' : '')}>
-          {l.label}
-        </NavLink>
-      ))}
 
-      <div style={{ marginTop: 'auto' }}>
+      <nav className="sidebar-nav">
+        {links.map((l) => (
+          <NavLink key={l.to} to={l.to} end={l.end} onClick={onNavigate} className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}>
+            <Icon name={l.icon} size={18} />
+            <span>{l.label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="sidebar-foot">
         <div className="sidebar-controls">
           <button className="pill-toggle" onClick={toggleTheme}>
             {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
@@ -38,10 +45,15 @@ export default function Sidebar({ isOpen, onNavigate }) {
             {lang === 'en' ? 'FR' : 'EN'}
           </button>
         </div>
-        <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12.5, padding: '0 12px 8px' }}>{user?.name}</div>
-        <a onClick={logout} style={{ cursor: 'pointer' }}>
-          {t('sign_out')}
-        </a>
+        <div className="sidebar-user">
+          <Avatar name={user?.name} src={user?.photoUrl} size={30} />
+          <div>
+            <b>{user?.name}</b>
+            <a onClick={logout} className="signout">
+              {t('sign_out')}
+            </a>
+          </div>
+        </div>
         <div className="sidebar-powered-by">
           <img src="/nexus-emblem.png" alt="Nexus Tech Labs" />
           <span>{t('powered_by')}</span>

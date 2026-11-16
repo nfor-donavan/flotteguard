@@ -8,6 +8,9 @@ import { useAuth } from '../context/AuthContext';
 import SelectField from '../components/SelectField';
 import ScreenContainer from '../components/ScreenContainer';
 import TopBar from '../components/TopBar';
+import Avatar from '../components/Avatar';
+import { LinearGradient } from 'expo-linear-gradient';
+import { radius, shadow } from '../theme';
 
 export default function DriverHomeScreen() {
   const { colors } = useTheme();
@@ -86,9 +89,17 @@ export default function DriverHomeScreen() {
   return (
     <ScreenContainer edges={['top', 'bottom']}>
       <TopBar title={t('app_name')} />
-      <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>{t('daily_turn_in')}</Text>
-        <Text style={styles.subtitle}>{t('greeting_turn_in', { name: user?.name })}</Text>
+      <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+        <LinearGradient colors={[colors.navy, colors.navyLight]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
+          <Avatar uri={user?.photoUrl} name={user?.name} size={56} style={{ borderWidth: 2, borderColor: colors.gold }} />
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>{t('driver_greeting_title', { name: (user?.name || '').split(' ')[0] })}</Text>
+            <Text style={styles.subtitle}>{t('driver_greeting_subtitle')}</Text>
+          </View>
+        </LinearGradient>
+
+        <View style={styles.formCard}>
+        <Text style={styles.formTitle}>{t('turn_in_details')}</Text>
 
         <SelectField label={t('vehicle')} value={vehicleId} options={vehicleOptions} onSelect={setVehicleId} placeholder={t('select_your_vehicle')} />
 
@@ -123,6 +134,7 @@ export default function DriverHomeScreen() {
         <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={submitting}>
           <Text style={styles.buttonText}>{submitting ? t('submitting') : t('submit_turn_in')}</Text>
         </TouchableOpacity>
+        </View>
       </ScrollView>
     </ScreenContainer>
   );
@@ -131,14 +143,17 @@ export default function DriverHomeScreen() {
 function createStyles(colors) {
   return StyleSheet.create({
     container: { padding: 20, flexGrow: 1 },
-    title: { fontSize: 22, fontWeight: '800', color: colors.ink },
-    subtitle: { color: colors.inkMuted, marginBottom: 20 },
+    hero: { flexDirection: 'row', alignItems: 'center', gap: 14, padding: 18, borderRadius: radius.lg, marginBottom: 18, ...shadow(2) },
+    title: { fontSize: 20, fontWeight: '800', color: '#fff' },
+    subtitle: { color: 'rgba(255,255,255,0.75)', marginTop: 3, lineHeight: 19 },
+    formCard: { backgroundColor: colors.card, borderRadius: radius.lg, padding: 18, borderWidth: 1, borderColor: colors.border, ...shadow(1) },
+    formTitle: { fontSize: 16, fontWeight: '800', color: colors.ink },
     label: { fontSize: 13, fontWeight: '600', color: colors.inkMuted, marginBottom: 6, marginTop: 12 },
-    input: { backgroundColor: colors.card, borderRadius: 10, padding: 12, fontSize: 15, borderWidth: 1, borderColor: colors.border, color: colors.ink },
-    secondaryButton: { marginTop: 16, padding: 12, borderRadius: 10, borderWidth: 1, borderColor: colors.ink, alignItems: 'center' },
+    input: { backgroundColor: colors.card, borderRadius: radius.sm, padding: 13, fontSize: 15, borderWidth: 1, borderColor: colors.border, color: colors.ink },
+    secondaryButton: { marginTop: 16, padding: 13, borderRadius: radius.sm, borderWidth: 1, borderColor: colors.ink, alignItems: 'center' },
     secondaryButtonText: { color: colors.ink, fontWeight: '600' },
     preview: { width: '100%', height: 160, borderRadius: 10, marginTop: 12 },
-    button: { marginTop: 20, backgroundColor: colors.gold, borderRadius: 10, padding: 14, alignItems: 'center' },
+    button: { marginTop: 20, backgroundColor: colors.gold, borderRadius: radius.md, padding: 15, alignItems: 'center' },
     buttonText: { color: colors.navy, fontWeight: '700', fontSize: 15 }
   });
 }

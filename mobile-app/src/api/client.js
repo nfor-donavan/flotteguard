@@ -13,6 +13,15 @@ const BASE_URL = 'https://REPLACE_ME.onrender.com/api';
 
 const client = axios.create({ baseURL: BASE_URL });
 
+// Image URLs from the API are either absolute (Cloudinary uploads) or relative
+// paths like "/demo/vehicles/prado-1.jpg" served by the backend itself. This
+// resolves both to something <Image> can load.
+export const API_ORIGIN = BASE_URL.replace(/\/api\/?$/, '');
+export function assetUrl(u) {
+  if (!u) return null;
+  return /^https?:\/\//.test(u) ? u : `${API_ORIGIN}${u.startsWith('/') ? '' : '/'}${u}`;
+}
+
 client.interceptors.request.use(async (config) => {
   const token = await AsyncStorage.getItem('flotteguard_token');
   if (token) config.headers.Authorization = `Bearer ${token}`;

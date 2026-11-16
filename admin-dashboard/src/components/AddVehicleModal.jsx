@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import Modal from './Modal';
+import { PhotoStrip } from './Photos';
 import client from '../api/client';
 import { useLanguage } from '../context/LanguageContext';
 
@@ -15,6 +16,7 @@ export default function AddVehicleModal({ onClose, onCreated }) {
     vignetteExpiry: '',
     carteGriseNumber: ''
   });
+  const [photos, setPhotos] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,6 +35,7 @@ export default function AddVehicleModal({ onClose, onCreated }) {
         status: form.status,
         currentMileage: Number(form.currentMileage) || 0,
         nextOilChangeMileage: Number(form.nextOilChangeMileage),
+        photos,
         documents: {
           insuranceExpiry: form.insuranceExpiry,
           vignetteExpiry: form.vignetteExpiry,
@@ -87,8 +90,12 @@ export default function AddVehicleModal({ onClose, onCreated }) {
           <label>{t('carte_grise_number')}</label>
           <input value={form.carteGriseNumber} onChange={(e) => update('carteGriseNumber', e.target.value)} />
         </div>
+        <div className="form-field">
+          <label>{t('photos_title')}</label>
+          <PhotoStrip photos={photos} onChange={setPhotos} signaturePath="/vehicles/upload-signature" />
+        </div>
         {error && <p className="error-text">{error}</p>}
-        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
+        <button className="btn btn-primary btn-block" disabled={submitting}>
           {submitting ? t('adding') : t('add_vehicle')}
         </button>
       </form>

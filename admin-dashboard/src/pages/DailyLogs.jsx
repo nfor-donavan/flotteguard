@@ -2,6 +2,9 @@ import React, { useEffect, useState } from 'react';
 import client from '../api/client';
 import AddDailyLogModal from '../components/AddDailyLogModal';
 import { useLanguage } from '../context/LanguageContext';
+import EmptyState from '../components/EmptyState';
+import Icon from '../components/Icon';
+import { SkeletonTable } from '../components/Skeleton';
 
 export default function DailyLogs() {
   const { t } = useLanguage();
@@ -34,15 +37,16 @@ export default function DailyLogs() {
           <p>{t('daily_logs_subtitle')}</p>
         </div>
         <button className="btn btn-gold" onClick={() => setShowModal(true)}>
+          <Icon name="plus" size={16} />
           {t('record_turn_in')}
         </button>
       </div>
 
-      <div className="card" style={{ padding: 0 }}>
+      <div className="card flush">
         {loading ? (
-          <p style={{ padding: 20 }}>{t('loading')}</p>
+          <SkeletonTable />
         ) : logs.length === 0 ? (
-          <p style={{ padding: 20, color: 'var(--ink-muted)' }}>{t('no_logs')}</p>
+          <EmptyState icon="receipt" title={t('no_logs_title')} text={t('no_logs')} />
         ) : (
           <div className="table-scroll">
             <table>

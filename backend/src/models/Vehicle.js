@@ -16,6 +16,17 @@ const VehicleSchema = new mongoose.Schema(
       insuranceExpiry: { type: Date, required: true },
       vignetteExpiry: { type: Date, required: true },
       carteGriseNumber: { type: String, trim: true }
+    },
+    // URLs: absolute (Cloudinary) or relative '/demo/...' (bundled demo images).
+    // First photo is the cover shown on cards.
+    photos: { type: [String], default: [] },
+    // Internal-only: stripped from responses to renters/drivers (see vehicle.routes.js).
+    maintenance: {
+      issue: { type: String, trim: true },
+      severity: { type: String, enum: ['Low', 'Medium', 'High'] },
+      reportedAt: Date,
+      expectedReadyDate: Date,
+      photos: { type: [String], default: [] }
     }
   },
   { timestamps: true }

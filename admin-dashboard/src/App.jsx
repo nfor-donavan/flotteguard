@@ -9,6 +9,7 @@ import VehicleDetail from './pages/VehicleDetail';
 import Rentals from './pages/Rentals';
 import DailyLogs from './pages/DailyLogs';
 import Staff from './pages/Staff';
+import Drivers from './pages/Drivers';
 
 function PrivateRoute({ children }) {
   const { user, loading } = useAuth();
@@ -25,6 +26,7 @@ export default function App() {
       <Route path="/vehicles" element={<PrivateRoute><Vehicles /></PrivateRoute>} />
       <Route path="/vehicles/:id" element={<PrivateRoute><VehicleDetail /></PrivateRoute>} />
       <Route path="/rentals" element={<PrivateRoute><Rentals /></PrivateRoute>} />
+      <Route path="/drivers" element={<PrivateRoute><Drivers /></PrivateRoute>} />
       <Route path="/daily-logs" element={<PrivateRoute><DailyLogs /></PrivateRoute>} />
       <Route path="/staff" element={<PrivateRoute><Staff /></PrivateRoute>} />
     </Routes>

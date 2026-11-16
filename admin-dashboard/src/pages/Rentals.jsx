@@ -2,6 +2,11 @@ import React, { useEffect, useState } from 'react';
 import client from '../api/client';
 import NewBookingModal from '../components/NewBookingModal';
 import { useLanguage } from '../context/LanguageContext';
+import Avatar from '../components/Avatar';
+import EmptyState from '../components/EmptyState';
+import Icon from '../components/Icon';
+import VehiclePhoto from '../components/VehiclePhoto';
+import { SkeletonTable } from '../components/Skeleton';
 
 const paymentLabelKey = {
   Pending: 'payment_status_pending',
@@ -68,15 +73,16 @@ export default function Rentals() {
           <p>{t('rentals_subtitle', { count: contracts.length })}</p>
         </div>
         <button className="btn btn-gold" onClick={() => setShowModal(true)}>
+          <Icon name="plus" size={16} />
           {t('new_booking')}
         </button>
       </div>
 
-      <div className="card" style={{ padding: 0 }}>
+      <div className="card flush">
         {loading ? (
-          <p style={{ padding: 20 }}>{t('loading')}</p>
+          <SkeletonTable />
         ) : contracts.length === 0 ? (
-          <p style={{ padding: 20, color: 'var(--ink-muted)' }}>{t('no_bookings')}</p>
+          <EmptyState icon="key" title={t('no_bookings_title')} text={t('no_bookings')} />
         ) : (
           <div className="table-scroll">
             <table>
@@ -84,6 +90,7 @@ export default function Rentals() {
                 <tr>
                   <th>{t('col_client')}</th>
                   <th>{t('col_vehicle')}</th>
+                  <th>{t('col_chauffeur')}</th>
                   <th>{t('col_dates')}</th>
                   <th>{t('col_total')}</th>
                   <th>{t('col_payment')}</th>
@@ -94,8 +101,28 @@ export default function Rentals() {
               <tbody>
                 {contracts.map((c) => (
                   <tr key={c._id}>
-                    <td>{c.clientName}</td>
-                    <td>{c.vehicleId?.plateNumber}</td>
+                    <td>
+                      <b>{c.clientName}</b>
+                    </td>
+                    <td>
+                      <div className="cell-media">
+                        <VehiclePhoto vehicle={c.vehicleId} className="thumb-sm" />
+                        <div className="cell-stack">
+                          <b>{c.vehicleId?.makeModel}</b>
+                          <span className="plate">{c.vehicleId?.plateNumber}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      {c.driverId ? (
+                        <div className="cell-media">
+                          <Avatar name={c.driverId.name} src={c.driverId.photoUrl} size={28} />
+                          <span>{c.driverId.name}</span>
+                        </div>
+                      ) : (
+                        <span className="muted-small">{t('self_drive')}</span>
+                      )}
+                    </td>
                     <td>
                       {new Date(c.startDate).toLocaleDateString()} → {new Date(c.endDate).toLocaleDateString()}
                     </td>
@@ -119,11 +146,11 @@ export default function Rentals() {
                     </td>
                     <td>
                       {c.status === 'Confirmed' && (
-                        <div style={{ display: 'flex', gap: 12 }}>
-                          <a onClick={() => handleMarkCompleted(c._id)} style={{ cursor: 'pointer' }}>
+                        <div className="row-actions">
+                          <a className="link-action" onClick={() => handleMarkCompleted(c._id)}>
                             {t('mark_completed')}
                           </a>
-                          <a onClick={() => handleCancel(c._id)} style={{ cursor: 'pointer', color: 'var(--danger)' }}>
+                          <a className="link-action danger" onClick={() => handleCancel(c._id)}>
                             {t('cancel')}
                           </a>
                         </div>

@@ -82,7 +82,7 @@ export default function AddDailyLogModal({ onClose, onCreated }) {
           <input type="number" value={form.fuelExpense} onChange={(e) => setForm((f) => ({ ...f, fuelExpense: e.target.value }))} />
         </div>
         {error && <p className="error-text">{error}</p>}
-        <button className="btn btn-primary" style={{ width: '100%', justifyContent: 'center' }} disabled={submitting}>
+        <button className="btn btn-primary btn-block"  disabled={submitting}>
           {submitting ? t('saving') : t('record_turn_in')}
         </button>
       </form>
